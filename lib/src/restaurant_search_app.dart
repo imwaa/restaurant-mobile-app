@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/client.dart';
 import './search_screen.dart';
-import 'client.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -16,7 +14,6 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(
         title: 'Takeaway',
-        dio: dio,
       ),
     );
   }

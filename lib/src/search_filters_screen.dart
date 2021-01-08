@@ -1,64 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
+import 'app_state.dart';
+import 'api.dart';
+import 'category.dart';
 
 class SearchFilters extends StatefulWidget {
-  final locations = ['city', 'subzone', 'zone', 'landmark', 'metro', 'group'];
-  final sort = ['cost', 'rating'];
-  final order = ['asc', 'desc'];
-  final double count = 20; // L'API NE RETOURNE QU'UN MAXIMUM DE 20 RESULTATS
-
-  final Dio dio;
-
-  final Function(SearchOptions filters) onSetFilters;
-  SearchFilters({this.onSetFilters, this.dio});
-
   @override
   _SearchFiltersState createState() => _SearchFiltersState();
 }
 
 class _SearchFiltersState extends State<SearchFilters> {
   /* ----------------------------------------------------
-         API FUNCTION POUR RECUPERER LES CATEGORIES
-  ---------------------------------------------------*/
-  List<Category> _categories;
-
-  SearchOptions _searchOptions;
-  Future<List<Category>> getCategories() async {
-    final response = await widget.dio.get('categories');
-    final data = response.data['categories'];
-    return data
-        .map<Category>((json) => Category(
-              json['categories']['id'],
-              json['categories']['name'],
-            ))
-        .toList();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _searchOptions = SearchOptions(
-      location: widget.locations.first,
-      order: widget.order.first,
-      count: widget.count,
-    );
-
-    getCategories().then((categories) {
-      setState(() {
-        _categories = categories;
-      });
-    });
-  }
-
-  /* ----------------------------------------------------
          ECRAN DE RECHERCHE FILTRE
   ---------------------------------------------------*/
   @override
   Widget build(BuildContext context) {
+    final api = Provider.of<ZomatoApi>(context);
+    final state = Provider.of<AppState>(context);
     return Scaffold(
         appBar: AppBar(
           title: Text("Filtez votre recherche"),
+          // title: Consumer<String>(
+          //   builder: (_, state, __) => Text("Filtez votre recherche $state"),
+          // ),
           backgroundColor: Colors.redAccent,
         ),
         body: Container(
@@ -75,13 +39,13 @@ class _SearchFiltersState extends State<SearchFilters> {
                       style:
                           TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
-                    _categories is List<Category>
+                    api.categories is List<Category>
                         ? Wrap(
                             spacing: 10,
-                            children: List<Widget>.generate(_categories.length,
-                                (index) {
-                              final category = _categories[index];
-                              final isSelected = _searchOptions.categories
+                            children: List<Widget>.generate(
+                                api.categories.length, (index) {
+                              final category = api.categories[index];
+                              final isSelected = state.searchOptions.categories
                                   .contains(category.id);
 
                               return FilterChip(
@@ -102,10 +66,10 @@ class _SearchFiltersState extends State<SearchFilters> {
                                     QUAND UNE CATEGORIES A ETE SELECTIONNER OU PAS */
                                   setState(() {
                                     if (selected) {
-                                      _searchOptions.categories
+                                      state.searchOptions.categories
                                           .add(category.id);
                                     } else {
-                                      _searchOptions.categories
+                                      state.searchOptions.categories
                                           .remove(category.id);
                                     }
                                   });
@@ -126,8 +90,8 @@ class _SearchFiltersState extends State<SearchFilters> {
                     ),
                     DropdownButton<String>(
                         isExpanded: true,
-                        value: _searchOptions.location,
-                        items: widget.locations
+                        value: state.searchOptions.location,
+                        items: api.locations
                             .map<DropdownMenuItem<String>>((value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -136,7 +100,7 @@ class _SearchFiltersState extends State<SearchFilters> {
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
-                            _searchOptions.location = value;
+                            state.searchOptions.location = value;
                           });
                         }),
                     SizedBox(height: 30),
@@ -147,14 +111,14 @@ class _SearchFiltersState extends State<SearchFilters> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    for (int idx = 0; idx < widget.order.length; idx++)
+                    for (int idx = 0; idx < api.order.length; idx++)
                       RadioListTile(
-                          title: Text(widget.order[idx]),
-                          value: widget.order[idx],
-                          groupValue: _searchOptions.order,
+                          title: Text(api.order[idx]),
+                          value: api.order[idx],
+                          groupValue: state.searchOptions.order,
                           onChanged: (selection) {
                             setState(() {
-                              _searchOptions.order = selection;
+                              state.searchOptions.order = selection;
                             });
                           }),
                     SizedBox(height: 30),
@@ -167,13 +131,13 @@ class _SearchFiltersState extends State<SearchFilters> {
                     ),
                     Wrap(
                       spacing: 10,
-                      children: widget.sort.map<ChoiceChip>((sort) {
+                      children: api.sort.map<ChoiceChip>((sort) {
                         return ChoiceChip(
                           label: Text(sort),
-                          selected: _searchOptions.sort == sort,
+                          selected: state.searchOptions.sort == sort,
                           onSelected: (selected) {
                             setState(() {
-                              _searchOptions.sort = sort;
+                              state.searchOptions.sort = sort;
                             });
                           },
                         );
@@ -188,15 +152,14 @@ class _SearchFiltersState extends State<SearchFilters> {
                       ),
                     ),
                     Slider(
-                        value: _searchOptions.count ?? 5,
+                        value: state.searchOptions.count ?? 5,
                         min: 5,
-                        max: widget.count,
-                        label: _searchOptions.count?.round().toString(),
+                        max: api.count,
+                        label: state.searchOptions.count?.round().toString(),
                         divisions: 3,
                         onChanged: (value) {
                           setState(() {
-                            _searchOptions.count = value;
-                            widget.onSetFilters(_searchOptions);
+                            state.searchOptions.count = value;
                           });
                         })
                   ],
@@ -206,33 +169,4 @@ class _SearchFiltersState extends State<SearchFilters> {
           ),
         ));
   }
-}
-
-class SearchOptions {
-  String location;
-  String order;
-  String sort;
-  double count;
-  List<int> categories = [];
-
-  SearchOptions({
-    this.location,
-    this.order,
-    this.sort,
-    this.count,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'location': location,
-        'sort': sort,
-        'order': order,
-        'count': count,
-        'category': categories.join(','),
-      };
-}
-
-class Category {
-  final int id;
-  final String name;
-  const Category(this.id, this.name);
 }

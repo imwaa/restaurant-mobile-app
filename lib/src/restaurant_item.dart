@@ -21,7 +21,8 @@ class RestaurantItem extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Colors.redAccent,
                         image: DecorationImage(
-                            image: NetworkImage(restaurant.thumbnail))),
+                            image: NetworkImage(restaurant.thumbnail),
+                            fit: BoxFit.fill)),
                   )
                 : Container(
                     height: 100,

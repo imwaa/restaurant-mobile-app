@@ -1,43 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/api.dart';
+import 'package:flutter_app/src/app_state.dart';
 import './search_filters_screen.dart';
 import './search_form.dart';
 import './restaurant_item.dart';
-import 'package:dio/dio.dart';
+import './app_state.dart';
+import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.dio}) : super(key: key);
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
-  final Dio dio;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-/* ---------------------------------------
-   FONCTION DE RECHERCHE DANS L'API
------------------------------------------*/
 class _MyHomePageState extends State<MyHomePage> {
   String query;
-  SearchOptions _filters;
-
-  Future<List> searchRestaurant(String query) async {
-    final response = await widget.dio.get(
-      'search',
-      queryParameters: {
-        'q': query,
-        ...(_filters != null ? _filters.toJson() : {}),
-      },
-    );
-    return response.data['restaurants'];
-  }
 
   /* ---------------------------------------
       DESIGN D'INTERFACE HEADER
 -----------------------------------------*/
-
   @override
   Widget build(BuildContext context) {
+    final api = Provider.of<ZomatoApi>(context);
+    final state = Provider.of<AppState>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -47,13 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
           InkWell(
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => SearchFilters(
-                          dio: widget.dio,
-                          onSetFilters: (filters) {
-                            _filters = filters;
-                          },
-                        )),
+                MaterialPageRoute(builder: (context) => SearchFilters()),
               );
             },
             child: Padding(
@@ -100,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   )
                 : FutureBuilder(
-                    future: searchRestaurant(query),
+                    future: api.searchRestaurant(query, state.searchOptions),
                     builder: (context, snapshot) {
                       // Progress indicator , pour indiquer qu'on effectue une recherche
                       if (snapshot.connectionState == ConnectionState.waiting) {
