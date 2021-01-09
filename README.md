@@ -1,6 +1,8 @@
 # Restaurant Finder Application
 A new Flutter application.
 
+<img src="https://i.imgur.com/kZqxZPL.png">
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
