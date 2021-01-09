@@ -1,5 +1,4 @@
-# flutter_app
-
+# Restaurant Finder Application
 A new Flutter application.
 
 ## Getting Started
