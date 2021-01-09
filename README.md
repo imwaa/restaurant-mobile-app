@@ -1,5 +1,5 @@
 # Restaurant Finder Application
-A new Flutter Application wich uses Zomato API to find Restaurants.
+A new Flutter Application wich uses [Zomato API](https://developers.zomato.com/api) to find Restaurants.
 
 <img src="https://i.imgur.com/kZqxZPL.png">
 
