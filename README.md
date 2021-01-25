@@ -3,6 +3,8 @@ A new Flutter Application wich uses [Zomato API](https://developers.zomato.com/a
 
 <img src="https://i.imgur.com/kZqxZPL.png">
 
+Made by Walid Salhi Belkacem
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
